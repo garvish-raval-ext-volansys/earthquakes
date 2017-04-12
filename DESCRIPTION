@@ -1,0 +1,23 @@
+Package: earthquakes
+Type: Package
+Title: Visulize NOAA earthquakes data into Timeline and Map data
+Version: 0.1.0
+Imports:
+    dplyr,
+    tidyr,
+    readr,
+    leaflet,
+    ggplot2,
+    lubridate
+Author: Garvish Raval
+Maintainer: Garvish Raval <garvish.raval@volansystech.com>
+Description: Provide the tools for processing and visualizing the data so that
+              others may extract some use out of the information embedded within.
+License: file LICENSE
+LazyData: TRUE
+Suggests:
+    knitr,
+    rmarkdown,
+    testthat
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

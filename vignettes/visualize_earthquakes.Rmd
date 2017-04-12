@@ -1,0 +1,198 @@
+---
+title: "NOAA earthquakes Visualization"
+author: "Garvish Raval"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{NOAA earthquakes Visualization}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+<meta charset="utf-8">
+
+This package is providing tools to visualizing the data so that others may extract some use out of the information embedded within for dataset obtained from the U.S. National Oceanographic and Atmospheric Administration (NOAA) on significant earthquakes around the world. This dataset contains information about 5,933 earthquakes over an approximately 4,000 year time span.
+[[1](https://www.ngdc.noaa.gov/nndc/struts/form?t=101650&s=1&d=1)]
+
+Further we give a short description with examples how to use the functions. For the purposes of these examples we will use data from NOAA, that can be found in the package directory under `\extdata` folder.
+
+This is sample code how to setup basic configuration to get started with dataset tools.
+
+```{r, include = FALSE}
+library(earthquakes)
+library(dplyr)
+library(ggplot2)
+
+#Setting Working directory
+setwd(system.file("extdata", package = "earthquakes"))
+
+#Assigning raw dataset file path
+raw_data_file <- "../inst/extdata/signif.txt"
+
+#Assigning start date
+START_DATE <- "2000-01-01"
+
+#Assigning end date
+END_DATE <- "2017-01-01"
+
+#Assigning Max Number
+N_MAX <- 5
+
+#Select Contry from Dataset
+#COUNTRIES <-c("USA","CHINA","INDIA")
+#COUNTRIES <- c("USA", "CHINA")
+COUNTRIES <- c("USA")
+#COUNTRIES <- c("MEXICO")
+```
+
+## Package functions
+
+There are exported configuration related function as basic functions:
+
+- `eq_clean_data()`
+- `eq_location_clean()`
+
+There are exported functions available to users for Timeline visualization:
+
+- `geom_timeLine()`
+- `geom_timeline_label()`
+- `them_timeline()`
+
+There are exported functions available to users for Plot visualization:
+
+- `eq_map()`
+- `eq_create_label()`
+
+## Reads NOAA earthquakes data set from .txt file and convert to clean datafrmae object
+
+This function `eq_clean_data()` takes raw NOAA data frame and returns a clean data frame-
+  1) A date column created by uniting the year, month, day
+      and converting it to the Date class
+  2) LATITUDE and LONGITUDE columns converted to numeric class
+
+```{r eq_clean_data_example}
+eq_data <- eq_clean_data(raw_data_file)
+```
+
+## Converts Location name to Title case
+
+This function `eq_location_clean()` cleans the LOCATION_NAME column by stripping out the country name (including the colon) and converts names to title case (as opposed to all caps). This will be needed later for annotating visualizations.
+
+```{r eq_location_clean_example}
+eq_data$LOCATION_NAME <- eq_location_clean(eq_data)
+```
+
+## This geom will plot a time line of earthquakes from xmin to xmaxdates for each earthquake.
+
+Geom `geom_timeLine()` Plot a time line of earthquakes ranging from xmin to xmaxdates with a point for
+each earthquake. Optional aesthetics include color, size, and alpha (for transparency).
+The xaesthetic is a date and an optional y aesthetic is a factor indicating
+some stratification in which case multiple time lines will be plotted for each level
+of the factor (e.g. country).
+
+```{r geom_timeLine_example}
+eq_data <- eq_data %>% dplyr::filter(COUNTRY %in% COUNTRIES)
+ggplot(
+  data = eq_data,
+   aes(
+     x = DATE,
+     y = COUNTRY,
+     colour = eq_data$TOTAL_DEATHS,
+     size = eq_data$EQ_PRIMARY,
+     date = eq_data$DATE,
+     countries = eq_data$COUNTRY,
+     location_name = eq_data$LOCATION_NAME
+   )
+ ) +
+geom_timeLine(xmin = START_DATE, xmax = END_DATE)
+```
+
+## This geom adds a vertical line to each data point with a text annotation
+
+Geom `geom_timeline_label()` adds a vertical line to each data point with a text
+annotation (e.g. the location of the earthquake) attached to each line with
+option to subset to n_max number of earthquakes, where we take the n_max
+largest (by magnitude) earthquakes.
+Aesthetics are x, which is the date of the earthquake and label which takes
+the column name from which annotations will be obtained.
+
+```{r geom_timeline_label_example}
+eq_data <- eq_data %>% dplyr::filter(COUNTRY %in% COUNTRIES)
+ggplot(
+  data = eq_data,
+   aes(
+     x = DATE,
+     y = COUNTRY,
+     colour = eq_data$TOTAL_DEATHS,
+     size = eq_data$EQ_PRIMARY,
+     date = eq_data$DATE,
+     countries = eq_data$COUNTRY,
+     location_name = eq_data$LOCATION_NAME
+   )
+ ) +
+geom_timeLine(xmin = START_DATE, xmax = END_DATE) +
+geom_timeline_label(xmin = START_DATE,
+                     xmax = END_DATE,
+                     n_max = N_MAX)
+```
+
+## Timeline Them to represent earthquakes on year timeframe
+
+This function `them_timeline()` set Them to represent timeline in non plot mode and display it like x time series ploting
+
+```{r them_timeline_example}
+eq_data <- eq_data %>% dplyr::filter(COUNTRY %in% COUNTRIES)
+ggplot(
+  data = eq_data,
+   aes(
+     x = DATE,
+     y = COUNTRY,
+     colour = eq_data$TOTAL_DEATHS,
+     size = eq_data$EQ_PRIMARY,
+     date = eq_data$DATE,
+     countries = eq_data$COUNTRY,
+     location_name = eq_data$LOCATION_NAME
+   )
+ ) +
+geom_timeLine(xmin = START_DATE, xmax = END_DATE) +
+geom_timeline_label(xmin = START_DATE,
+                     xmax = END_DATE,
+                     n_max = N_MAX) +
+them_timeline() +
+labs(
+     y = "",
+     x = "Date",
+     size = "Richter Scale Value",
+     colour = "# deaths"
+)
+```
+
+## Visualize earthquakes data on leaflet Map.
+
+This function `eq_map()` takes an argument data containing the filtered data frame with earthquakes
+to visualize. The function maps the epicenters (LATITUDE/LONGITUDE) and annotates
+each point with in pop up window containing annotation data stored in a column of
+the data frame.
+
+```{r eq_map_example}
+eq_data %>%
+  dplyr::filter(COUNTRY %in% COUNTRIES & lubridate::year(DATE) >= 2000) %>%
+  eq_map(annot_col = "DATE")
+```
+
+## Creates an HTML label to use in Popup text for Location, Magnitude and Total number of Deaths
+
+This function `eq_create_label()` Creates an HTML label that can be used as the annotation text in the leaflet map.
+This function put together a character string for each earthquake that will show
+the cleaned location , the magnitude (EQ_PRIMARY), and
+the total number of deaths (TOTAL_DEATHS),
+with boldface labels for each ("Location", "Total deaths", and "Magnitude").
+If an earthquake is missing values for any of these, both the label and the
+value will be skipped for that element of the tag.
+
+```{r eq_create_label_example}
+eq_data %>%
+  dplyr::filter(COUNTRY %in% COUNTRIES & 
+                  lubridate::year(DATE) >= lubridate::year(START_DATE)) %>%
+  dplyr::mutate(popup_text = eq_create_label(.)) %>%
+  eq_map(annot_col = "popup_text")
+```
