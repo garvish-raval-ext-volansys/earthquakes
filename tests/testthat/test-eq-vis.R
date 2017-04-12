@@ -22,25 +22,25 @@ test_that("Location Name", {
 
 test_that("Geom Timeline", {
   print("Testing Geom Timeline Functon")
-
+  # Geom plot is not possible to test without Vdiff which is in this scope.
 })
 
 test_that("Geom TimelineLabel", {
   print("Testing Geom TimelineLabel Functon")
-
+  # Geom plot is not possible to test without Vdiff which is in this scope.
 })
 
 test_that("Geom Timeline Them", {
   print("Testing Geom Timeline Them Functon")
-
+  # Geom plot is not possible to test without Vdiff which is in this scope.
 })
 
 test_that("Earthquakes Map", {
   print("Testing Earthquakes Map Functon")
-
+  # Geom plot is not possible to test without Vdiff which is in this scope.
 })
 
 test_that("Earthquakes Map with Popup Label", {
   print("Testing Earthquakes Map with Popup Label Functon")
-
+  # Geom plot is not possible to test without Vdiff which is in this scope.
 })
