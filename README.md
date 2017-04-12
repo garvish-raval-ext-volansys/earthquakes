@@ -1,5 +1,7 @@
 # NOAA earthquakes
 
+[![Build Status](https://travis-ci.org/garvish/earthquakes.svg?branch=master)](https://travis-ci.org/garvish/earthquakes)
+
 The goal of earthquakes package is to visualize some of the information in the NOAA earthquakes dataset. In particular, we would like to visualize the times at which earthquakes occur within certain countries. In addition to showing the dates on which the earthquakes occur, we can also show the magnitudes (i.e. Richter scale value) and the number of deaths associated with each earthquake.
 
 ## Example
